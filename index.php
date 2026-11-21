@@ -43,7 +43,7 @@ header('Cache-Control: no-store');
         </div>
       </section>
     </main>
-    <footer><span>Human ideas. Machine help.</span><span>mashpad.com</span></footer>
+    <footer><span>Human ideas. Machine help.</span><span>mashpad.ai</span></footer>
   </div>
 </body>
 </html>
