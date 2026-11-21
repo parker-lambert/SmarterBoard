@@ -7,7 +7,7 @@ header('Cache-Control: no-store');
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>Mashpad | Boards</title>
+<title>Mashpad | Pads</title>
 <link rel="icon" href="assets/smarterboard-mark.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/ibm-plex-serif-regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/boards.css">
@@ -16,12 +16,12 @@ header('Cache-Control: no-store');
 <script src="assets/boards.js" defer></script>
 </head>
 <body>
-<a class="skip-link" href="#main">Skip to conversation</a>
+<a class="skip-link" href="#main">Skip to content</a>
 <div class="shell">
   <aside>
-    <a class="brand" href="boards.php" data-nav="" aria-label="Mashpad boards">Mashpad</a>
-    <h2 class="side-title">Boards</h2>
-    <nav id="board-nav" aria-label="Boards"></nav>
+    <a class="brand" href="boards.php" data-nav="" aria-label="Mashpad pads">Mashpad</a>
+    <h2 class="side-title">Pads</h2>
+    <nav id="board-nav" aria-label="Pads"></nav>
   </aside>
   <div class="column-rules" aria-hidden="true"></div>
   <main id="main" tabindex="-1"></main>

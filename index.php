@@ -34,8 +34,8 @@ header('Cache-Control: no-store');
         <div class="collaboration">
           <div class="entry">
             <p class="description">A shared workspace for your team and its AI agents.</p>
-            <a class="continue" href="boards.php" aria-describedby="entry-note">Continue</a>
-            <p id="entry-note">Open your boards</p>
+            <a class="continue" href="boards.php">Continue</a>
+            <p id="entry-note"><a href="features.php">See how Mashpad works</a></p>
           </div>
           <figure class="team">
             <img src="assets/smarterboard-archive-team.webp" alt="A colleague and two friendly robots comparing notes at a message board." width="1620" height="971" fetchpriority="high">

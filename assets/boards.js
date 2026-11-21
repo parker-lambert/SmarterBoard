@@ -1,7 +1,7 @@
 const API = 'api.php';
 const BASE = new URL('.', location.href.split('?')[0]).href;
 const MCP_URL = new URL('mcp/index.php', BASE).href;
-const state = { slug: null, latest: 0, boards: [], now: Date.now() / 1000, ttl: 2592000, timers: [] };
+const state = { slug: null, view: 'home', navigation: 0, latest: 0, boards: [], now: Date.now() / 1000, ttl: 2592000, timers: [] };
 
 /* ---------- helpers ---------- */
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -36,47 +36,66 @@ async function getJSON(url, opts) {
 
 /* ---------- sidebar ---------- */
 function boardListHTML() {
-  if (!state.boards.length) return '<p class="side-empty">No boards yet.</p>';
-  return state.boards.map(b => `
-    <a class="board-link" href="boards.php?b=${encodeURIComponent(b.slug)}" data-nav="${esc(b.slug)}"
-       ${b.slug === state.slug ? 'aria-current="page"' : ''}>
-      <div class="name">${esc(b.name || b.slug)}</div>
-      <div class="meta">${b.total} message${b.total === 1 ? '' : 's'}, ${ago(b.last_activity)}</div>
-      ${b.authors.length ? `<div class="who-list">${b.authors.map(authorSpan).join('')}</div>` : ''}
-    </a>`).join('');
+  if (!state.boards.length) return '<p class="side-empty">No pads yet.</p>';
+  return state.boards.map(b => {
+    const url = `boards.php?b=${encodeURIComponent(b.slug)}`;
+    const current = b.slug === state.slug;
+    return `<div class="pad-row${current ? ' is-current' : ''}">
+      <a class="board-link" href="${url}" data-nav="${esc(b.slug)}"
+         ${current && state.view === 'pad' ? 'aria-current="page"' : ''}>
+        <div class="name">${esc(b.name || b.slug)}</div>
+        <div class="meta">${b.total} message${b.total === 1 ? '' : 's'}, ${ago(b.last_activity)}</div>
+        ${b.authors.length ? `<div class="who-list">${b.authors.map(authorSpan).join('')}</div>` : ''}
+      </a>
+      <a class="pad-settings-link" href="${url}&amp;view=settings" data-nav="${esc(b.slug)}"
+         aria-label="Settings for ${esc(b.name || b.slug)}" title="Pad settings"
+         ${current && state.view === 'settings' ? 'aria-current="page"' : ''}>${gearIcon()}</a>
+    </div>`;
+  }).join('');
+}
+
+function gearIcon() {
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9.5 3-.6 2.4-1.4.8-2.4-.7-2.5 4.3 1.8 1.7v1.6l-1.8 1.7 2.5 4.3 2.4-.7 1.4.8.6 2.4h5l.6-2.4 1.4-.8 2.4.7 2.5-4.3-1.8-1.7v-1.6l1.8-1.7-2.5-4.3-2.4.7-1.4-.8L14.5 3z"/><circle cx="12" cy="12.3" r="3"/></svg>';
+}
+
+function refreshPadNavigation() {
+  const html = boardListHTML();
+  document.querySelectorAll('#board-nav, .mobile-boards').forEach(nav => {
+    // Polling must not remove a focused link or interrupt a pointer click.
+    if (nav.contains(document.activeElement) || nav.matches(':hover')) return;
+    if (nav.innerHTML !== html) nav.innerHTML = html;
+  });
 }
 
 async function loadBoards() {
   try {
     const d = await getJSON(`${API}?action=boards`);
     state.boards = d.boards; state.ttl = d.ttl;
-    document.getElementById('board-nav').innerHTML = boardListHTML();
-    const mb = document.querySelector('.mobile-boards');
-    if (mb) mb.innerHTML = boardListHTML();
+    refreshPadNavigation();
   } catch (e) { /* keep the last good list */ }
 }
 
 /* ---------- home ---------- */
 function showHome() {
-  state.slug = null;
-  document.title = 'Mashpad | Boards';
+  state.slug = null; state.view = 'home';
+  document.title = 'Mashpad | Pads';
   document.getElementById('main').innerHTML = `
     <div class="inner home">
-      <h1>Your boards</h1>
-      <p>Pick a board to catch up on the conversation or add a message of your own.</p>
+      <h1>Your pads</h1>
+      <p>Pick a pad to catch up on the conversation or add a message of your own.</p>
       <p>People and AI agents share the same thread, so everyone can follow the work.</p>
-      <nav class="mobile-boards" aria-label="Boards">${boardListHTML()}</nav>
+      <nav class="mobile-boards" aria-label="Pads">${boardListHTML()}</nav>
 
       <details class="agent-setup">
       <summary>Connect an AI agent</summary>
       <p>Add this address as a remote MCP server in your agent's settings (HTTP, no authentication):</p>
       <div class="copyline"><code id="mcp-url">${esc(MCP_URL)}</code><button type="button" data-copy="mcp-url" aria-label="Copy agent connection address">Copy</button></div>
 
-      <p>Then ask your agent to post to a named board. Its first post creates the board.</p>
+      <p>Then ask your agent to post to a named pad. Its first post creates the pad. Your agent’s tools currently call pads “boards.”</p>
       <p class="example">Go to the message board <strong>checkout-qa</strong> and report what you found.</p>
       <p class="example">Read the checkout-qa board and respond to the tester’s feedback.</p>
       </details>
-      <p class="home-note">Boards are deleted after 30 days without a new message.</p>
+      <p class="home-note">Pads are deleted after 30 days without a new message.</p>
     </div>`;
   document.getElementById('board-nav').innerHTML = boardListHTML();
 }
@@ -117,29 +136,31 @@ function appendMessages(msgs, fresh) {
   }
 }
 
-async function showBoard(slug) {
-  state.slug = slug; state.latest = 0;
+async function showBoard(slug, navigation) {
+  state.slug = slug; state.view = 'pad'; state.latest = 0;
   document.getElementById('board-nav').innerHTML = boardListHTML();
   const main = document.getElementById('main');
+  main.innerHTML = '<div class="inner home"><p role="status">Loading pad…</p></div>';
   let d;
   try {
     d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}`);
   } catch (e) {
-    main.innerHTML = `<div class="inner home"><a class="back" href="boards.php" data-nav="">All boards</a>
+    if (navigation !== state.navigation) return;
+    main.innerHTML = `<div class="inner home"><a class="back" href="boards.php" data-nav="">All pads</a>
       <h1>${esc(slug)}</h1>
       <p class="empty">${e.status === 404
-        ? 'This board doesn’t exist, or it was deleted after 30 days without a new message. It will appear here as soon as an agent posts to it.'
-        : 'The board couldn’t be loaded: ' + esc(e.message)}</p></div>`;
+        ? 'This pad doesn’t exist, or it was deleted after 30 days without a new message. It will appear here as soon as an agent posts to it.'
+        : 'The pad couldn’t be loaded: ' + esc(e.message)}</p></div>`;
     return;
   }
-  if (state.slug !== slug) return;
+  if (navigation !== state.navigation) return;
   document.title = `${d.name || d.slug} · Mashpad`;
   main.innerHTML = `
     <div class="inner board-head">
-      <a class="back" href="boards.php" data-nav="">All boards</a>
+      <a class="back" href="boards.php" data-nav="">All pads</a>
       <h1>${esc(d.name || d.slug)}</h1>
       <p class="head-meta" id="head-meta">${headMeta(d)}</p>
-      <nav class="reading-nav" aria-label="Conversation"><a href="#transcript">Read from start</a><a href="#composer">Reply</a></nav>
+      <nav class="reading-nav" aria-label="Conversation"><a href="#transcript">Read from start</a><a href="#composer">Reply</a><a href="boards.php?b=${encodeURIComponent(slug)}&amp;view=settings" data-nav="${esc(slug)}">Pad settings</a></nav>
     </div>
     <div class="inner transcript" id="transcript" aria-live="polite">
       ${d.messages.length ? '' : '<p class="empty">No messages yet. Posts from agents will show up here as they arrive.</p>'}
@@ -147,8 +168,10 @@ async function showBoard(slug) {
     <div class="composer">
       <div class="inner">
         <form id="composer" aria-label="Post a message">
-          <div class="name-field"><label for="c-author">Post as</label><input id="c-author" autocomplete="off" maxlength="40"></div>
-          <div><label for="c-body">Message</label><textarea id="c-body" rows="2" placeholder="Add to the conversation"></textarea></div>
+          <label class="author-label" for="c-author">Post as</label>
+          <input id="c-author" autocomplete="off" maxlength="40">
+          <label class="message-label" for="c-body">Message</label>
+          <textarea id="c-body" rows="1" placeholder="Add to the conversation"></textarea>
           <button type="submit">Post</button>
         </form>
         <p class="composer-hint">⌘ / Ctrl + Enter to post</p>
@@ -163,11 +186,11 @@ async function showBoard(slug) {
 }
 
 async function pollBoard() {
-  if (!state.slug || document.hidden) return;
-  const slug = state.slug;
+  if (!state.slug || state.view !== 'pad' || document.hidden) return;
+  const slug = state.slug, navigation = state.navigation;
   try {
     const d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}&since=${state.latest}`);
-    if (state.slug !== slug) return;
+    if (navigation !== state.navigation) return;
     const nearBottom = innerHeight + scrollY >= document.body.scrollHeight - 160;
     if (d.messages.length) {
       appendMessages(d.messages, true);
@@ -178,22 +201,24 @@ async function pollBoard() {
     const hm = document.getElementById('head-meta');
     if (hm) hm.innerHTML = headMeta(d);
   } catch (e) {
-    if (e.status === 404) showBoard(slug);
+    if (e.status === 404 && navigation === state.navigation) showBoard(slug, navigation);
   }
   document.querySelectorAll('time[data-ts]').forEach(t => { t.textContent = ago(Number(t.dataset.ts)); });
 }
 
 function bindComposer(slug) {
+  const navigation = state.navigation;
   const form = document.getElementById('composer');
   const author = document.getElementById('c-author');
   const body = document.getElementById('c-body');
   try { author.value = localStorage.getItem('mb-author') || 'operator'; } catch { author.value = 'operator'; }
 
   body.addEventListener('input', () => { body.style.height = 'auto'; body.style.height = body.scrollHeight + 2 + 'px'; });
-  body.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) form.requestSubmit(); });
+  body.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); if (!form.querySelector('button').disabled) form.requestSubmit(); } });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    if (form.querySelector('button').disabled) return;
     form.querySelector('.form-error')?.remove();
     const btn = form.querySelector('button');
     btn.disabled = true;
@@ -204,21 +229,68 @@ function bindComposer(slug) {
       });
       try { localStorage.setItem('mb-author', author.value.trim()); } catch {}
       body.value = ''; body.style.height = '';
+      if (navigation !== state.navigation) return;
       await pollBoard();
+      if (navigation !== state.navigation) return;
       window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     } catch (err) {
       form.insertAdjacentHTML('beforeend', `<p class="form-error" role="alert">${esc(err.message)}</p>`);
     } finally {
       btn.disabled = false;
-      body.focus();
+      if (navigation === state.navigation) body.focus();
     }
   });
 }
 
+/* ---------- pad settings (design preview; no settings are saved) ---------- */
+async function showSettings(slug, navigation) {
+  state.slug = slug; state.view = 'settings';
+  document.getElementById('board-nav').innerHTML = boardListHTML();
+  document.title = 'Pad settings · Mashpad';
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="inner home"><p role="status">Loading pad settings…</p></div>';
+  let d;
+  try {
+    d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}&since=0`);
+  } catch (e) {
+    if (navigation !== state.navigation) return;
+    main.innerHTML = `<div class="inner home"><a href="boards.php" data-nav="">All pads</a><h1>Pad settings</h1><p role="alert">${e.status === 404 ? 'This pad no longer exists.' : 'Settings couldn’t be loaded. Please try again.'}</p></div>`;
+    return;
+  }
+  if (navigation !== state.navigation) return;
+  const name = d.name || d.slug;
+  const padURL = `boards.php?b=${encodeURIComponent(d.slug)}`;
+  document.title = `${name} settings · Mashpad`;
+  main.innerHTML = `<div class="inner settings-page">
+    <a href="${padURL}" data-nav="${esc(d.slug)}">Back to pad</a>
+    <h1>Pad settings</h1>
+    <p class="settings-name">${esc(name)}</p>
+    <p class="preview-note">Settings are coming soon. This is a preview; nothing on this page changes your pad.</p>
+    <section class="settings-section" aria-labelledby="settings-details">
+      <h2 id="settings-details">Pad details</h2>
+      <dl class="pad-details"><dt>Name</dt><dd>${esc(name)}</dd><dt>Address</dt><dd><a href="${padURL}" data-nav="${esc(d.slug)}">${esc(new URL(padURL, BASE).href)}</a></dd></dl>
+      <p class="settings-note">Name and description editing will go here.</p>
+    </section>
+    <section class="settings-section" aria-labelledby="settings-people">
+      <h2 id="settings-people">People and agents</h2>
+      <p>Manage who can join and which agents can contribute.</p>
+      <p class="settings-note">Coming soon. Access controls are not available yet.</p>
+    </section>
+    <section class="settings-section" aria-labelledby="settings-history">
+      <h2 id="settings-history">Message history</h2>
+      <p>Pads are currently deleted after 30 days without a new message.</p>
+      <p class="settings-note">History and retention controls will go here.</p>
+    </section>
+  </div>`;
+}
+
 /* ---------- routing ---------- */
 function route() {
-  const slug = new URLSearchParams(location.search).get('b');
-  slug ? showBoard(slug) : showHome();
+  const params = new URLSearchParams(location.search);
+  const slug = params.get('b');
+  const navigation = ++state.navigation;
+  if (!slug) return showHome();
+  return params.get('view') === 'settings' ? showSettings(slug, navigation) : showBoard(slug, navigation);
 }
 
 document.addEventListener('click', e => {
@@ -231,7 +303,7 @@ document.addEventListener('click', e => {
     return;
   }
   const a = e.target.closest('a[data-nav]');
-  if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  if (!a || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   e.preventDefault();
   history.pushState(null, '', a.getAttribute('href'));
   route();
@@ -240,6 +312,7 @@ document.addEventListener('click', e => {
 window.addEventListener('popstate', route);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { loadBoards(); pollBoard(); } });
 
-loadBoards().then(route);
+route();
+loadBoards();
 setInterval(pollBoard, 3000);
 setInterval(loadBoards, 15000);
