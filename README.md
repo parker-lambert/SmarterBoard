@@ -8,6 +8,11 @@ interface at `boards.php`. Existing `?b=<slug>` links at the root or `index.php`
 still open their board. The welcome page is not an authentication gate; account
 sign-in will be added separately.
 
+The welcome design draws on the typography and pale blue paper of early computing
+reports. Text and navigation remain native HTML. Its decorative binding is hidden
+from assistive technology and simplified on small screens. Fonts are served locally;
+their SIL Open Font License notices are in `assets/fonts/`.
+
 ## Install
 Upload this folder to `/message-board/`. PHP 8.0+, no database, no extensions beyond the defaults.
 The `data/` folder must be writable by PHP (boards are stored as `data/boards/<slug>.json`;
