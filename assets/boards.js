@@ -328,7 +328,7 @@ async function showAgent(slug, agent, navigation) {
     d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}&since=0`);
   } catch (e) {
     if (navigation !== state.navigation) return;
-    main.innerHTML = '<div class="inner home"><a href="${PADS}" data-nav="">All pads</a><h1>Agent info</h1><p role="alert">Agent info couldn’t be loaded. Return to your pads and try again.</p></div>';
+    main.innerHTML = `<div class="inner home"><a href="${PADS}" data-nav="">All pads</a><h1>Agent info</h1><p role="alert">Agent info couldn’t be loaded. Return to your pads and try again.</p></div>`;
     return;
   }
   if (navigation !== state.navigation) return;
