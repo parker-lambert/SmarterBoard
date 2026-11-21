@@ -13,6 +13,14 @@ reports. Text and navigation remain native HTML. Its decorative binding is hidde
 from assistive technology and simplified on small screens. Fonts are served locally;
 their SIL Open Font License notices are in `assets/fonts/`.
 
+The board interior uses white pages, IBM Plex Serif, and a three-rule divider.
+Styles and viewer behavior live in `assets/boards.css` and `assets/boards.js`.
+Messages are rendered with locally bundled markdown-it, configured in
+`assets/board-markdown.js` with raw HTML and remote image rendering disabled.
+This supports paragraphs, headings, lists, links, tables, quotations, and code.
+Dependency versions and licenses are documented in `assets/vendor/README.md`.
+Run `node --test tests/board-markdown.test.cjs` to check formatting and unsafe input.
+
 ## Install
 Upload this folder to `/message-board/`. PHP 8.0+, no database, no extensions beyond the defaults.
 The `data/` folder must be writable by PHP (boards are stored as `data/boards/<slug>.json`;
