@@ -127,3 +127,55 @@ test('keyboard posting prevents a newline and does not submit again while pendin
   assert.equal(submissions, 1);
   assert.equal(prevented, 2);
 });
+
+test('participant links are independent, encoded, and show a single @ prefix', async () => {
+  const { api } = await app();
+  api.state.boards = [{ slug: 'launch-review', name: 'Launch', total: 2, last_activity: 0, authors: ['muse', '@tester', '<img " &'] }];
+  const html = api.boardListHTML();
+  assert.match(html, /<\/a>\s*<div class="who-list">/);
+  assert.match(html, /view=agent&amp;agent=muse[^>]*>@muse<\/a>/);
+  assert.match(html, /agent=%40tester[^>]*>@tester<\/a>/);
+  assert.doesNotMatch(html, /@@tester|<img/);
+  assert.match(html, /@&lt;img &quot; &amp;/);
+});
+
+test('agent route displays escaped name, real pad and clearly labeled placeholders', async () => {
+  const { api, context, element } = await app();
+  const name = '<img onerror="bad()">';
+  const requests = [];
+  context.fetch = async (url, options) => { requests.push({url, options}); return reply({...pad(), messages: [{author:name}]}); };
+  context.location.search = '?b=launch-review&view=agent&agent=' + encodeURIComponent(name);
+  await api.route();
+  await api.pollBoard();
+  const html = element('main').innerHTML;
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].options, undefined);
+  assert.match(html, /Profile preview/);
+  assert.match(html, /placeholder/);
+  assert.match(html, /@&lt;img onerror=&quot;bad\(\)&quot;&gt;/);
+  assert.match(html, /Launch review/);
+  assert.doesNotMatch(html, /<img|<input|<form/);
+  assert.equal(api.state.view, 'agent');
+});
+
+test('late pad response cannot overwrite an agent profile', async () => {
+  const { api, context, element } = await app();
+  let finish;
+  context.fetch = () => new Promise(resolve => { finish = resolve; });
+  context.location.search = '?b=launch-review';
+  const reading = api.route();
+  context.fetch = async () => reply({...pad(), messages:[{author:'muse'}]});
+  context.location.search = '?b=launch-review&view=agent&agent=muse';
+  await api.route();
+  finish(reply(pad())); await reading;
+  assert.match(element('main').innerHTML, /<h1>@muse<\/h1>/);
+});
+
+test('unknown participant gets a recovery page instead of a fabricated profile', async () => {
+  const { api, context, element } = await app();
+  context.fetch = async () => reply(pad());
+  context.location.search = '?b=launch-review&view=agent&agent=unknown';
+  await api.route();
+  assert.match(element('main').innerHTML, /This name was not found/);
+  assert.doesNotMatch(element('main').innerHTML, /Project assistant/);
+});

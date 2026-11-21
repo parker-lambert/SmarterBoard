@@ -6,7 +6,8 @@ const state = { slug: null, view: 'home', navigation: 0, latest: 0, boards: [], 
 /* ---------- helpers ---------- */
 const esc = s => s.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const hue = name => { let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0; return h % 360; };
-const authorSpan = a => `<span style="--h:${hue(a)}">${esc(a)}</span>`;
+const displayName = a => '@' + a.replace(/^@+/, '');
+const authorSpan = a => `<span style="--h:${hue(a)}">${esc(displayName(a))}</span>`;
 
 function ago(ts) {
   const s = Math.max(0, Math.round(Date.now() / 1000 - ts));
@@ -45,8 +46,8 @@ function boardListHTML() {
          ${current && state.view === 'pad' ? 'aria-current="page"' : ''}>
         <div class="name">${esc(b.name || b.slug)}</div>
         <div class="meta">${b.total} message${b.total === 1 ? '' : 's'}, ${ago(b.last_activity)}</div>
-        ${b.authors.length ? `<div class="who-list">${b.authors.map(authorSpan).join('')}</div>` : ''}
       </a>
+      ${b.authors.length ? `<div class="who-list">${b.authors.map(a => `<a class="agent-link" href="${url}&amp;view=agent&amp;agent=${esc(encodeURIComponent(a))}" data-nav="${esc(b.slug)}">${esc(displayName(a))}</a>`).join('')}</div>` : ''}
       <a class="pad-settings-link" href="${url}&amp;view=settings" data-nav="${esc(b.slug)}"
          aria-label="Settings for ${esc(b.name || b.slug)}" title="Pad settings"
          ${current && state.view === 'settings' ? 'aria-current="page"' : ''}>${gearIcon()}</a>
@@ -128,7 +129,7 @@ function appendMessages(msgs, fresh) {
       g.className = 'group';
       g.dataset.author = m.author;
       g.style.setProperty('--h', hue(m.author));
-      g.innerHTML = `<div class="group-head"><span class="author">${esc(m.author)}</span></div>`;
+      g.innerHTML = `<div class="group-head"><span class="author">${esc(displayName(m.author))}</span></div>`;
       t.appendChild(g);
     }
     g.dataset.last = m.ts;
@@ -284,12 +285,67 @@ async function showSettings(slug, navigation) {
   </div>`;
 }
 
+/* ---------- agent info (placeholder profile, scoped to the selected pad) ---------- */
+async function showAgent(slug, agent, navigation) {
+  state.slug = slug; state.view = 'agent';
+  document.getElementById('board-nav').innerHTML = boardListHTML();
+  document.title = 'Agent info · Mashpad';
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="inner home"><p role="status">Loading agent info…</p></div>';
+  let d;
+  try {
+    d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}&since=0`);
+  } catch (e) {
+    if (navigation !== state.navigation) return;
+    main.innerHTML = '<div class="inner home"><a href="boards.php" data-nav="">All pads</a><h1>Agent info</h1><p role="alert">Agent info couldn’t be loaded. Return to your pads and try again.</p></div>';
+    return;
+  }
+  if (navigation !== state.navigation) return;
+  const padURL = `boards.php?b=${encodeURIComponent(slug)}`;
+  // Names are currently message signatures, not verified agent identities.
+  const known = d.messages.some(m => m.author === agent);
+  if (!agent || !known) {
+    main.innerHTML = `<div class="inner home"><a href="${padURL}" data-nav="${esc(slug)}">Back to pad</a><h1>Agent info</h1><p role="alert">This name was not found in this pad.</p></div>`;
+    return;
+  }
+  document.title = `${displayName(agent)} · Agent info · Mashpad`;
+  main.innerHTML = `<div class="inner settings-page agent-page">
+    <a href="${padURL}" data-nav="${esc(slug)}">Back to pad</a>
+    <h1>${esc(displayName(agent))}</h1>
+    <p class="settings-name">Agent info</p>
+    <p class="preview-note">Profile preview. The name and pad below come from this conversation. All other details are placeholders.</p>
+    <section class="settings-section" aria-labelledby="agent-details">
+      <h2 id="agent-details">At a glance</h2>
+      <dl class="pad-details">
+        <dt>Display name</dt><dd>${esc(displayName(agent))}</dd>
+        <dt>Pad</dt><dd><a href="${padURL}" data-nav="${esc(slug)}">${esc(d.name || d.slug)}</a></dd>
+        <dt>Role</dt><dd>Project assistant <span class="placeholder-label">(placeholder)</span></dd>
+        <dt>Model</dt><dd>Model name will appear here <span class="placeholder-label">(placeholder)</span></dd>
+        <dt>Managed by</dt><dd>Owner name will appear here <span class="placeholder-label">(placeholder)</span></dd>
+      </dl>
+      <p class="settings-note">Display names are supplied with messages. They do not yet identify a verified agent or person.</p>
+    </section>
+    <section class="settings-section" aria-labelledby="agent-about">
+      <h2 id="agent-about">About this agent</h2>
+      <p class="placeholder-label">Placeholder description</p>
+      <p>Helps the team review work, summarize findings, and coordinate next steps in the pad.</p>
+    </section>
+    <section class="settings-section" aria-labelledby="agent-capabilities">
+      <h2 id="agent-capabilities">Capabilities</h2>
+      <p class="placeholder-label">Placeholder examples</p>
+      <ul><li>Research and summarize information</li><li>Review work and report findings</li><li>Coordinate tasks with people and other agents</li></ul>
+      <p class="settings-note">Actual profile details and capabilities will be added when agent profiles are connected.</p>
+    </section>
+  </div>`;
+}
+
 /* ---------- routing ---------- */
 function route() {
   const params = new URLSearchParams(location.search);
   const slug = params.get('b');
   const navigation = ++state.navigation;
   if (!slug) return showHome();
+  if (params.get('view') === 'agent') return showAgent(slug, params.get('agent'), navigation);
   return params.get('view') === 'settings' ? showSettings(slug, navigation) : showBoard(slug, navigation);
 }
 
