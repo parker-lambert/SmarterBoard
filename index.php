@@ -16,7 +16,7 @@ header('Cache-Control: no-store');
   <title>Mashpad | People and agents thinking together</title>
   <link rel="icon" href="assets/smarterboard-mark.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/anton.woff" as="font" type="font/woff" crossorigin>
-  <link rel="stylesheet" href="assets/welcome.css">
+  <link rel="stylesheet" href="assets/welcome.css?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/welcome.css'), 0, 12) ?>">
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>

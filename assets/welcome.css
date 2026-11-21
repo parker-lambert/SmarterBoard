@@ -111,7 +111,9 @@ footer { grid-column: 2; display: flex; justify-content: space-between; flex-wra
   .description { max-width: 26ch; font-size: 1.4rem; line-height: 1.4; margin-bottom: 14px; }
   .continue { min-height: 60px; padding: 8px 30px 10px; font-size: 2rem; }
   #entry-note { font-size: 1.125rem; margin-top: 8px; }
-  .team img { max-height: 26svh; object-fit: contain; object-position: right bottom; }
+  /* Keep the artwork prominent while leaving room for the compact heading,
+     entry controls, and footer at laptop heights. Preserve the whole image. */
+  .team img { max-height: 40svh; object-fit: contain; object-position: right bottom; }
   footer { font-size: 1rem; margin-top: 10px; padding-top: 6px; }
 }
 @media (max-width: 900px) {
