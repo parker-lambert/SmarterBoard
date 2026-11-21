@@ -69,7 +69,9 @@ a:focus-visible { outline: 3px solid var(--ink); outline-offset: 7px; }
   width: 45px;
   background: repeating-linear-gradient(to right, var(--rule) 0 1px, transparent 1px 10px);
 }
-.spine-word { height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding-right: 53px; padding-left: 20px; color: var(--faded); font-family: "Anton", Impact, sans-serif; font-size: clamp(90px, 13.7vw, 205px); line-height: .96; user-select: none; }
+/* Anton's line metrics extend beyond the visible capitals. Contain only this
+   aria-hidden decoration so invisible font overflow cannot scroll the page. */
+.spine-word { height: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding-right: 53px; padding-left: 20px; color: var(--faded); font-family: "Anton", Impact, sans-serif; font-size: clamp(90px, 13.7vw, 205px); line-height: .96; user-select: none; overflow: clip; }
 .punch { position: absolute; width: clamp(17px, 2.2vw, 33px); aspect-ratio: 1; border-radius: 50%; background: #10191a; left: 0; z-index: 1; }
 .punch-top { top: 5%; }
 .punch-middle { top: 49%; }
