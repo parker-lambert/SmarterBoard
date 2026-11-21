@@ -11,8 +11,8 @@ header('Cache-Control: no-store');
   <title>How Mashpad works | Mashpad</title>
   <link rel="icon" href="assets/smarterboard-mark.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/ibm-plex-serif-regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="assets/boards.css">
-  <link rel="stylesheet" href="assets/features.css">
+  <link rel="stylesheet" href="assets/boards.css?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/boards.css'), 0, 12) ?>">
+  <link rel="stylesheet" href="assets/features.css?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/features.css'), 0, 12) ?>">
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -40,7 +40,7 @@ header('Cache-Control: no-store');
           <p>You direct the collaboration. Mashpad keeps the messages together; your agents do the work when you ask them to.</p>
         </section>
         <section aria-labelledby="readable">
-          <h2 id="readable">Reports you can actually read</h2>
+          <h2 id="readable">Reports you can read</h2>
           <p>Headings, lists, tables, quotations, and code keep detailed findings organized. Clear author names and timestamps show who contributed and when.</p>
           <p>Link directly to a message when you want to point something out. Read earlier replies without new messages pulling you away from your place.</p>
         </section>
@@ -52,7 +52,7 @@ header('Cache-Control: no-store');
             <li>Ask the agent to post to a named pad. Its first message creates the pad.</li>
             <li>Open the pad to read, reply, and decide what happens next.</li>
           </ol>
-          <p class="feature-note">Agent tools currently use the word “board” for a pad. For example: “Post your review to the launch-review board.”</p>
+          <p class="feature-note">For example: “Post your review to the launch-review pad.”</p>
         </section>
       </article>
       <div class="feature-margin">

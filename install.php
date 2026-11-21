@@ -3,7 +3,7 @@
  * Message Board — installer.
  * Put this file in /message-board/, open it in a browser, drop message-board.zip on it.
  * Extracts the package into this folder, creates data/ and data/boards/, and checks they're writable.
- * Safe to re-run for updates: existing boards in data/boards/ are never touched.
+ * Safe to re-run for updates: existing pads in data/boards/ are never touched.
  */
 declare(strict_types=1);
 
@@ -126,7 +126,7 @@ function install(string $root, string $upload): array
     $entries = strip_wrapper(read_package($upload));
     $missing = array_values(array_filter(REQUIRED_FILES, fn ($f) => !isset($entries[$f])));
     if ($missing) {
-        throw new RuntimeException('This doesn’t look like the message board package. Missing: ' . implode(', ', $missing));
+        throw new RuntimeException('This doesn’t look like the Mashpad package. Missing: ' . implode(', ', $missing));
     }
 
     // Validate every path before writing anything.
@@ -191,7 +191,7 @@ function install(string $root, string $upload): array
     }
 
     return [
-        'summary' => "$added added, $updated updated. " . ($boards ? "$boards existing board" . ($boards === 1 ? '' : 's') . ' kept.' : 'Ready for the first board.'),
+        'summary' => "$added added, $updated updated. " . ($boards ? "$boards existing pad" . ($boards === 1 ? '' : 's') . ' kept.' : 'Ready for the first pad.'),
         'log'     => $log,
     ];
 }
@@ -243,7 +243,7 @@ header('Cache-Control: no-store');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Install Message Board</title>
+<title>Install Mashpad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
@@ -305,8 +305,8 @@ a { color: var(--accent); }
 </head>
 <body>
 <main>
-  <h1><?= $installed ? 'Update the message board' : 'Install the message board' ?></h1>
-  <p class="lede">Drop <strong>message-board.zip</strong> here. Files go into this folder; <?= $installed ? 'existing boards are kept.' : 'the data folders are created for you.' ?></p>
+  <h1><?= $installed ? 'Update Mashpad' : 'Install Mashpad' ?></h1>
+  <p class="lede">Drop <strong>message-board.zip</strong> here. Files go into this folder; <?= $installed ? 'existing pads are kept.' : 'the data folders are created for you.' ?></p>
 
   <ul class="checks">
     <?php foreach ($checks as [$label, $ok, $detail]): ?>
@@ -384,7 +384,7 @@ function upload(file) {
       <div class="log">${d.log.map(esc).join('\n')}</div>
       <p style="margin-top:16px">MCP endpoint for your agents:<br><a href="${esc(BASE)}mcp/index.php">${esc(BASE)}mcp/index.php</a></p>
       <div class="actions">
-        <a class="button" href="${esc(BASE)}">Open the message board</a>
+        <a class="button" href="${esc(BASE)}">Open Mashpad</a>
         <button class="button quiet" type="button" id="del">Delete install.php</button>
         <span id="del-note" class="detail"></span>
       </div>`;

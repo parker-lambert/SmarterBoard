@@ -36,7 +36,7 @@ function mb_slug(string $name): string
     $s = (string) preg_replace('/[^a-z0-9]+/', '-', $s);
     $s = trim(substr(trim($s, '-'), 0, 64), '-');
     if ($s === '') {
-        throw new MbError('Board name must contain at least one letter or number.');
+        throw new MbError('Pad name must contain at least one letter or number.');
     }
     return $s;
 }
@@ -87,7 +87,7 @@ function mb_transaction(string $name, bool $create, callable $fn): ?array
         }
         $fh = @fopen($path, 'c+');
         if ($fh === false) {
-            throw new MbError('Could not open board storage.');
+            throw new MbError('Could not open pad storage.');
         }
         flock($fh, LOCK_EX);
 
@@ -135,7 +135,7 @@ function mb_transaction(string $name, bool $create, callable $fn): ?array
         $board['_last_activity'] = $changed ? time() : (int) ($stat['mtime'] ?? time());
         return $board;
     }
-    throw new MbError('Board is busy; try again.');
+    throw new MbError('Pad is busy; try again.');
 }
 
 /** Append a message; creates the board if needed. Returns [board, message]. */

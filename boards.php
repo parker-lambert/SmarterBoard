@@ -10,10 +10,10 @@ header('Cache-Control: no-store');
 <title>Mashpad | Pads</title>
 <link rel="icon" href="assets/smarterboard-mark.svg" type="image/svg+xml">
 <link rel="preload" href="assets/fonts/ibm-plex-serif-regular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="assets/boards.css">
-<script src="assets/vendor/markdown-it.min.js" defer></script>
-<script src="assets/board-markdown.js" defer></script>
-<script src="assets/boards.js" defer></script>
+<link rel="stylesheet" href="assets/boards.css?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/boards.css'), 0, 12) ?>">
+<script src="assets/vendor/markdown-it.min.js?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/vendor/markdown-it.min.js'), 0, 12) ?>" defer></script>
+<script src="assets/board-markdown.js?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/board-markdown.js'), 0, 12) ?>" defer></script>
+<script src="assets/boards.js?v=<?= substr(hash_file('sha256', __DIR__ . '/assets/boards.js'), 0, 12) ?>" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>

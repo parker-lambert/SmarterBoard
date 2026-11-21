@@ -30,10 +30,10 @@ switch ($_SERVER['REQUEST_METHOD'] ?? 'GET') {
         // Anything else is a person in a browser, so show a status page instead.
         if (stripos($_SERVER['HTTP_ACCEPT'] ?? '', 'text/event-stream') === false) {
             header('Content-Type: text/plain; charset=utf-8');
-            echo "Message Board MCP server " . MB_VERSION . " is running.\n\n"
+            echo "Mashpad MCP server " . MB_VERSION . " is running.\n\n"
                . "This URL is for MCP clients, which talk to it with POST requests.\n"
                . "Add it as a remote MCP server (Streamable HTTP, no authentication).\n"
-               . "To watch the boards, open the folder above this one.\n";
+               . "To watch the pads, open the folder above this one.\n";
             exit;
         }
         // fall through
@@ -106,7 +106,7 @@ function handle($msg): ?array
             return rpc_result($id, [
                 'protocolVersion' => in_array($asked, MCP_PROTOCOLS, true) ? $asked : MCP_PROTOCOLS[0],
                 'capabilities'    => ['tools' => ['listChanged' => false]],
-                'serverInfo'      => ['name' => 'message-board', 'title' => 'Agent Message Board', 'version' => MB_VERSION],
+                'serverInfo'      => ['name' => 'message-board', 'title' => 'Mashpad', 'version' => MB_VERSION],
                 'instructions'    => instructions(),
             ]);
         case 'ping':
@@ -127,30 +127,31 @@ function handle($msg): ?array
 function instructions(): string
 {
     return <<<TXT
-A shared message board for agents working for the same operator, e.g. one agent building an app and another testing it.
+Mashpad is a shared workspace of pads for people and agents working together, e.g. one agent building an app and another testing it.
 
-- Boards are named. Posting to or reading a board that doesn't exist creates it.
+- Pads are named. Posting to or reading a pad that doesn't exist creates it.
+- Use “pad” and “pads” in all messages, explanations, and product copy. Legacy tool identifiers and the board argument remain compatible; they refer to pads.
 - Always sign posts with the same short author name (your role, e.g. "builder", "tester").
 - To check for new messages, call read_board with since_id set to the latest_id from your previous read. Use wait_seconds to wait briefly for a reply.
 - Write each post so it stands on its own: what you did, what you found, what you need from the other agent.
-- Boards are deleted after 30 days without a new message. The operator can watch every board at https://parker-lambert-sandbox.com/message-board/
+- Pads are deleted after 30 days without a new message. The operator can watch every pad at https://parker-lambert-sandbox.com/message-board/
 TXT;
 }
 
 function tools(): array
 {
-    $board = ['type' => 'string', 'description' => 'Board name, e.g. "pixelbrief-qa". Case and punctuation are normalised, so "PixelBrief QA" and "pixelbrief-qa" are the same board. Created automatically if it does not exist.'];
+    $board = ['type' => 'string', 'description' => 'Pad name, e.g. "pixelbrief-qa". Case and punctuation are normalised, so "PixelBrief QA" and "pixelbrief-qa" are the same pad. Created automatically if it does not exist.'];
 
     return [
         [
             'name'        => 'post_message',
-            'title'       => 'Post to a board',
-            'description' => 'Post a message to a named board, creating the board if it does not exist. Markdown is fine. Returns the new message id.',
+            'title'       => 'Post to a pad',
+            'description' => 'Post a message to a named pad, creating the pad if it does not exist. Markdown is fine. Returns the new message id.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
                     'board'   => $board,
-                    'author'  => ['type' => 'string', 'description' => 'Your short, stable name on this board, e.g. "builder" or "tester". Use the same name every time you post.'],
+                    'author'  => ['type' => 'string', 'description' => 'Your short, stable name on this pad, e.g. "builder" or "tester". Use the same name every time you post.'],
                     'message' => ['type' => 'string', 'description' => 'The message. Up to 64 KB; split longer reports into several posts.'],
                 ],
                 'required' => ['board', 'author', 'message'],
@@ -159,8 +160,8 @@ function tools(): array
         ],
         [
             'name'        => 'read_board',
-            'title'       => 'Read a board',
-            'description' => 'Read messages from a named board (creating it if it does not exist). Without since_id, returns the most recent messages. With since_id, returns only messages newer than that id: pass the latest_id from your previous read to check for new messages. Set wait_seconds to wait up to 20 seconds for a new message to arrive.',
+            'title'       => 'Read a pad',
+            'description' => 'Read messages from a named pad (creating it if it does not exist). Without since_id, returns the most recent messages. With since_id, returns only messages newer than that id: pass the latest_id from your previous read to check for new messages. Set wait_seconds to wait up to 20 seconds for a new message to arrive.',
             'inputSchema' => [
                 'type'       => 'object',
                 'properties' => [
@@ -175,8 +176,8 @@ function tools(): array
         ],
         [
             'name'        => 'list_boards',
-            'title'       => 'List boards',
-            'description' => 'List every active board with its message count, participants, latest message id and last activity time.',
+            'title'       => 'List pads',
+            'description' => 'List every active pad with its message count, participants, latest message id and last activity time.',
             'inputSchema' => ['type' => 'object', 'properties' => (object) []],
             'annotations' => ['readOnlyHint' => true, 'openWorldHint' => false],
         ],
@@ -215,7 +216,7 @@ function call_tool(string $name, array $args): array
 function tool_post(array $a): array
 {
     [$board, $msg] = mb_post((string) ($a['board'] ?? ''), (string) ($a['author'] ?? ''), (string) ($a['message'] ?? ''));
-    $new = $board['_created_now'] ? " (new board created)" : '';
+    $new = $board['_created_now'] ? " (new pad created)" : '';
     return tool_text(
         "Posted message #{$msg['id']} to \"{$board['slug']}\"{$new} as {$msg['author']}.\n" .
         "To see replies later, call read_board with since_id={$msg['id']}."
@@ -242,9 +243,9 @@ function tool_read(array $a): array
     }
 
     $lines = [];
-    $lines[] = "Board \"{$r['slug']}\": {$r['total']} message" . ($r['total'] === 1 ? '' : 's') . ' total. latest_id: ' . $r['latest_id'];
+    $lines[] = "Pad \"{$r['slug']}\": {$r['total']} message" . ($r['total'] === 1 ? '' : 's') . ' total. latest_id: ' . $r['latest_id'];
     if ($createdNow) {
-        $lines[] = 'This board did not exist, so it was just created. It is empty.';
+        $lines[] = 'This pad did not exist, so it was just created. It is empty.';
     }
 
     if (!$r['messages']) {
@@ -276,9 +277,9 @@ function tool_list(): array
 {
     $boards = mb_list();
     if (!$boards) {
-        return tool_text('There are no boards yet. Post to any board name to create one.');
+        return tool_text('There are no pads yet. Post to any pad name to create one.');
     }
-    $lines = [count($boards) . ' active board' . (count($boards) === 1 ? '' : 's') . ':'];
+    $lines = [count($boards) . ' active pad' . (count($boards) === 1 ? '' : 's') . ':'];
     foreach ($boards as $b) {
         $who = $b['authors'] ? implode(', ', $b['authors']) : 'nobody yet';
         $lines[] = "- {$b['slug']}: {$b['total']} messages (latest_id {$b['latest_id']}), participants: {$who}, last activity " . mb_time($b['last_activity']);
