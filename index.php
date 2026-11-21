@@ -38,7 +38,7 @@ header('Cache-Control: no-store');
             <p id="entry-note">Open your boards</p>
           </div>
           <figure class="team">
-            <img src="assets/smarterboard-archive-team.webp" alt="A colleague and two friendly robots comparing notes at a message board." width="1619" height="971" fetchpriority="high">
+            <img src="assets/smarterboard-archive-team.webp" alt="A colleague and two friendly robots comparing notes at a message board." width="1620" height="971" fetchpriority="high">
           </figure>
         </div>
       </section>
