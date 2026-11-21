@@ -93,8 +93,24 @@ h1 span { display: block; }
 .team img { display: block; width: 100%; height: auto; mix-blend-mode: multiply; }
 footer { grid-column: 2; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px 24px; border-top: 1px solid var(--rule); margin-top: 18px; padding-top: 14px; font-family: "Anton", Impact, sans-serif; font-size: clamp(.95rem, 1.5vw, 1.35rem); text-transform: uppercase; letter-spacing: .065em; line-height: 1.5; }
 @media (min-width: 1200px) {
-  .report-cover { min-height: max(100svh, 900px); }
   .team { margin-left: -36px; }
+}
+/* Leave room for laptop browser chrome without clipping content at zoom. */
+@media (min-width: 901px) and (max-height: 900px) {
+  .report-cover { padding-top: 16px; padding-bottom: 14px; }
+  .spine-word { font-size: clamp(88px, min(13.7vw, 21svh), 205px); }
+  .masthead { padding-bottom: 8px; }
+  .masthead a { font-size: 1.75rem; }
+  .handwritten { font-size: clamp(2.2rem, 5.5svh, 3rem); margin: 2px 0 6px; }
+  h1 { font-size: clamp(2.5rem, min(5.85vw, 8svh), 5.6rem); }
+  .standfirst { font-size: 1.5rem; margin-top: 12px; }
+  .collaboration { padding-top: 14px; }
+  .entry { padding-bottom: 0; }
+  .description { max-width: 26ch; font-size: 1.4rem; line-height: 1.4; margin-bottom: 14px; }
+  .continue { min-height: 60px; padding: 8px 30px 10px; font-size: 2rem; }
+  #entry-note { font-size: 1.125rem; margin-top: 8px; }
+  .team img { max-height: 26svh; object-fit: contain; object-position: right bottom; }
+  footer { font-size: 1rem; margin-top: 10px; padding-top: 6px; }
 }
 @media (max-width: 900px) {
   .report-cover { --spine: 112px; --gap: 26px; padding-top: 25px; }

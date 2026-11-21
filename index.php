@@ -23,7 +23,7 @@ header('Cache-Control: no-store');
   <div class="report-cover">
     <div class="binding" aria-hidden="true">
       <span class="punch punch-top"></span><span class="punch punch-middle"></span><span class="punch punch-bottom"></span>
-      <div class="spine-word"><span>B</span><span>O</span><span>A</span><span>R</span><span>D</span></div>
+      <div class="spine-word"><span>M</span><span>A</span><span>S</span><span>H</span></div>
     </div>
     <header class="masthead"><a href="./" aria-label="Mashpad home">Mashpad</a></header>
     <main id="main" tabindex="-1">
