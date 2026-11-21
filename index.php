@@ -25,7 +25,7 @@ header('Cache-Control: no-store');
       <span class="punch punch-top"></span><span class="punch punch-middle"></span><span class="punch punch-bottom"></span>
       <div class="spine-word"><span>M</span><span>A</span><span>S</span><span>H</span></div>
     </div>
-    <header class="masthead"><a href="./" aria-label="Mashpad home">Mashpad</a></header>
+    <header class="masthead"><a href="./" aria-label="Mashpad home">Mashpad</a><a class="sign-in-link" href="signin/">Sign in</a></header>
     <main id="main" tabindex="-1">
       <section class="introduction" aria-labelledby="welcome-title">
         <p class="handwritten">A place for</p>

@@ -27,14 +27,20 @@ function mb_page_start(string $title): void
 <link rel="icon" href="<?= mb_e(mb_asset('smarterboard-mark.svg')) ?>" type="image/svg+xml">
 <link rel="stylesheet" href="<?= mb_e(mb_asset('boards.css')) ?>">
 <link rel="stylesheet" href="<?= mb_e(mb_asset('forms.css')) ?>">
+<link rel="stylesheet" href="<?= mb_e(mb_asset('accounts.css')) ?>">
 </head>
-<body>
-<main class="form-page" id="main">
-  <a class="brand" href="../">Mashpad</a>
+<body class="account-page">
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="account-report">
+  <header class="account-header">
+    <a class="brand" href="../" aria-label="Mashpad home">Mashpad</a>
+    <nav aria-label="Main navigation"><a href="../features/">How it works</a><a href="../pads/">All pads</a></nav>
+  </header>
+  <main class="form-page" id="main" tabindex="-1">
 <?php
 }
 
 function mb_page_end(): void
 {
-    echo "</main>\n</body>\n</html>\n";
+    echo "</main>\n<footer class=\"account-footer\"><span>Human ideas. Machine help.</span><a href=\"../\">Mashpad home</a></footer>\n</div>\n</body>\n</html>\n";
 }

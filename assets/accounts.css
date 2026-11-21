@@ -1,0 +1,49 @@
+/* Account presentation only. Kept after forms.css so the builder's shared
+   controls (including the handle prefix) can evolve independently. */
+.account-page { background: #f5f9f8; }
+.account-report {
+  width: min(100%, 1040px);
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: 28px 48px 24px 76px;
+  background: repeating-linear-gradient(to right, var(--binding) 0 1px, transparent 1px 5px) 28px 0 / 11px 100% no-repeat, var(--paper);
+  display: flex;
+  flex-direction: column;
+}
+.account-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
+.account-header .brand { margin: 0; }
+.account-header nav { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: .9375rem; }
+.account-header nav a, .account-footer a { display: inline-flex; align-items: center; min-height: 44px; }
+.account-page .form-page { width: 100%; max-width: 34rem; margin: 0 auto; padding: 48px 0 56px; flex: 1; }
+.account-page .form-page h1 { font-size: clamp(2rem, 4vw, 2.75rem); margin: 0 0 24px; padding-bottom: 24px; border-bottom: 3px double var(--binding); letter-spacing: -.035em; }
+.account-page .form-page p { margin-block: 0 20px; overflow-wrap: anywhere; }
+.account-page .form-page form { gap: 24px; margin: 0 0 28px; }
+.account-page .form-page label { gap: 8px; font-size: 1rem; line-height: 1.5; }
+.account-page .form-page .hint { font-size: .9375rem; }
+.account-page .form-page input:not([type="hidden"]) { min-width: 0; min-height: 48px; border: 1px solid var(--binding); border-radius: 0; background: #fff; padding: 10px 12px; font-size: 1rem; font-weight: 400; line-height: 1.5; }
+.account-page .form-page input:hover { border-color: var(--ink); }
+.account-page .form-page input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.account-page .form-page button { min-height: 48px; max-width: 100%; border: 2px solid var(--ink); border-radius: 0; padding: 10px 26px; background: var(--ink); color: #fff; font-size: 1rem; line-height: 1.5; }
+.account-page .form-page button:hover { background: var(--accent); border-color: var(--accent); }
+.account-page .form-page button:disabled { cursor: not-allowed; opacity: .6; }
+.account-page .form-page .aside { font-size: .9375rem; line-height: 1.65; }
+.account-page .form-page .error, .account-page .form-page .notice { padding: 16px 18px; font-size: 1rem; }
+.account-page .form-page .error { color: #762923; border-left-color: #a8322d; }
+.account-page .form-page .notice { background: var(--selected); }
+/* Compatible with the fixed @ prefix introduced in the account update. */
+.account-page .form-page .handle-field { display: flex; align-items: stretch; }
+.account-page .form-page .handle-at { display: flex; align-items: center; padding: 0 14px; border: 1px solid var(--binding); border-right: 0; border-radius: 0; background: var(--selected); }
+.account-page .form-page .handle-field input { flex: 1; width: 0; border-radius: 0; }
+.account-footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px 24px; border-top: 1px solid var(--rule); padding-top: 16px; color: var(--muted); font-size: .875rem; }
+@media (max-width: 600px) {
+  .account-report { padding: 20px 20px 20px 39px; background-position: 12px 0; }
+  .account-header { gap: 12px; padding-bottom: 16px; }
+  .account-header nav { gap: 8px 20px; }
+  .account-page .form-page { padding-block: 32px 40px; }
+  .account-page .form-page h1 { padding-bottom: 20px; }
+  .account-page .form-page button { width: 100%; }
+}
+@media (forced-colors: active) {
+  .account-report { background: Canvas; border-left: 3px double CanvasText; }
+  .account-page .form-page .error, .account-page .form-page .notice { border: 1px solid CanvasText; border-left-width: 4px; }
+}
