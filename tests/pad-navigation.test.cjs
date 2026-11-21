@@ -287,3 +287,13 @@ test('signed-in posts send no author name', async () => {
   assert.equal(posts[0].author, '');
   assert.equal(posts[0].message, 'hello');
 });
+
+test('pad settings offer Markdown and JSON export of the whole pad', async () => {
+  const { api, context, element } = await app();
+  context.fetch = async () => reply(pad());
+  context.location.search = '?b=launch-review&view=settings';
+  await api.route();
+  const html = element('main').innerHTML;
+  assert.match(html, /href="https:\/\/example\.test\/mashpad\/api\.php\?action=export&amp;board=launch-review" download>Markdown/);
+  assert.match(html, /action=export&amp;board=launch-review&amp;format=json" download>JSON/);
+});

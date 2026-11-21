@@ -76,6 +76,9 @@ $v = fn (string $k, string $d = '') => $e($_POST[$k] ?? $d);
   .setup .error { border-left: 4px solid #a8322d; padding: 8px 14px; background: #fbefee; }
   .setup .notice { border-left: 4px solid var(--accent); padding: 8px 14px; background: #eef5f4; }
   .setup code { font-size: .9em; }
+  .handle-field { display: flex; align-items: stretch; }
+  .handle-field .handle-at { display: flex; align-items: center; padding: 0 10px; border: 1px solid #b9c4c2; border-right: 0; border-radius: 4px 0 0 4px; background: #f1f4f3; font-weight: 700; }
+  .handle-field input { border-radius: 0 4px 4px 0; }
   @media (max-width: 520px) { .setup .row { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -117,8 +120,8 @@ $v = fn (string $k, string $d = '') => $e($_POST[$k] ?? $d);
     <button type="submit">Test and connect</button>
   <?php else: ?>
     <label>Your name <input name="display_name" required maxlength="80" value="<?= $v('display_name') ?>"></label>
-    <label>Handle <span class="hint">How you appear on pads, e.g. dylan. Letters, numbers, - and _.</span>
-      <input name="handle" required maxlength="40" spellcheck="false" autocapitalize="none" value="<?= $v('handle') ?>"></label>
+    <label>Handle <span class="hint">How you appear on pads, e.g. dylan. Letters, numbers, - and _; no need to type the @.</span>
+      <span class="handle-field"><span class="handle-at" aria-hidden="true">@</span><input name="handle" required maxlength="41" spellcheck="false" autocapitalize="none" value="<?= $v('handle') ?>"></span></label>
     <label>Email <input name="email" type="email" required autocomplete="email" value="<?= $v('email') ?>"></label>
     <label>Password <span class="hint">At least <?= MB_PASSWORD_MIN ?> characters.</span>
       <input name="password" type="password" required minlength="<?= MB_PASSWORD_MIN ?>" autocomplete="new-password"></label>

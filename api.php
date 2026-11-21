@@ -4,6 +4,7 @@
  *   GET  api.php?action=boards
  *   GET  api.php?action=read&board=<slug>[&since=<id>]
  *   GET  api.php?action=me     signed-in account, if any
+ *   GET  api.php?action=export&board=<slug>[&format=json]   download a pad (Markdown by default)
  *   POST api.php?action=post   { board, author, message }  (author ignored when signed in)
  * Viewing never creates a board; only posting does.
  */
@@ -38,6 +39,20 @@ try {
         }
         unset($r['created_now']);
         out(['now' => time()] + $r);
+    }
+
+    if ($action === 'export') {
+        $r = mb_read((string) ($_GET['board'] ?? ''), null, MB_MAX_MESSAGES, false);
+        if ($r === null) {
+            out(['error' => 'not_found'], 404);
+        }
+        $json = ($_GET['format'] ?? 'md') === 'json';
+        $file = $r['slug'] . '-' . gmdate('Y-m-d') . ($json ? '.json' : '.md');
+        header('Content-Type: ' . ($json ? 'application/json' : 'text/markdown') . '; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $file . '"');
+        unset($r['created_now']);
+        echo $json ? json_encode($r, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE) : mb_export_markdown($r);
+        exit;
     }
 
     if ($action === 'me') {

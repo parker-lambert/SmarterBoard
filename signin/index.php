@@ -37,7 +37,7 @@ mb_page_start('Sign in');
   <form method="post" action="./">
     <input type="hidden" name="csrf" value="<?= mb_e($csrf) ?>">
     <input type="hidden" name="next" value="<?= mb_e($next) ?>">
-    <label>Email <input name="email" type="email" required autocomplete="email" autofocus value="<?= mb_e($_POST['email'] ?? '') ?>"></label>
+    <label>Email <input name="email" type="email" required autocomplete="email" value="<?= mb_e($_POST['email'] ?? '') ?>"></label>
     <label>Password <input name="password" type="password" required autocomplete="current-password"></label>
     <button type="submit">Sign in</button>
   </form>

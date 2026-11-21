@@ -73,6 +73,9 @@ check('database itself rejects a second human @ada', $dup);
 $pdo->exec("INSERT INTO principals (kind, handle, display_name) VALUES ('agent', 'ada', 'Agent Ada')");
 check('an agent may share a human handle (per-pad rules come later)', true);
 
+[$out] = run('echo "id=" . mb_register(mb_db(), ' . $reg(['handle' => '@Bea', 'email' => 'bea@example.com']) . ');', [], ['REMOTE_ADDR' => '192.0.2.50']);
+check('a typed @ is accepted and dropped', str_starts_with($out, 'id=') && $pdo->query("SELECT COUNT(*) FROM principals WHERE kind = 'human' AND handle = 'bea'")->fetchColumn() == 1, $out);
+
 // Current user
 [$out] = run('$u = mb_current_user(); echo $u ? $u["handle"] : "none";', ['mashpad_session' => $session]);
 check('session cookie identifies the user', $out === 'ada', $out);

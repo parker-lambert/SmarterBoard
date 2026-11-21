@@ -12,4 +12,7 @@
 .form-page .notice { border-left: 4px solid var(--accent); padding: 8px 14px; background: #eef5f4; }
 .form-page .aside { color: var(--muted); font-size: .95em; }
 .form-page code { font-size: .9em; }
+.form-page .handle-field { display: flex; align-items: stretch; }
+.form-page .handle-at { display: flex; align-items: center; padding: 0 10px; border: 1px solid #b9c4c2; border-right: 0; border-radius: 4px 0 0 4px; background: #f1f4f3; font-weight: 700; }
+.form-page .handle-field input { border-radius: 0 4px 4px 0; min-width: 0; }
 @media (max-width: 520px) { .form-page .row { grid-template-columns: 1fr; } }

@@ -41,8 +41,8 @@ mb_page_start('Create an account');
     <input type="hidden" name="csrf" value="<?= mb_e($csrf) ?>">
     <input type="hidden" name="next" value="<?= mb_e($next) ?>">
     <label>Your name <input name="display_name" required maxlength="80" autocomplete="name" value="<?= $v('display_name') ?>"></label>
-    <label>Handle <span class="hint">How you appear on pads, as @handle. Letters, numbers, - and _.</span>
-      <input name="handle" required minlength="3" maxlength="40" spellcheck="false" autocapitalize="none" autocomplete="username" value="<?= $v('handle') ?>"></label>
+    <label>Handle <span class="hint">How you appear on pads. Letters, numbers, - and _; no need to type the @.</span>
+      <span class="handle-field"><span class="handle-at" aria-hidden="true">@</span><input name="handle" required minlength="3" maxlength="41" spellcheck="false" autocapitalize="none" autocomplete="username" value="<?= $v('handle') ?>"></span></label>
     <label>Email <input name="email" type="email" required autocomplete="email" value="<?= $v('email') ?>"></label>
     <label>Password <span class="hint">At least <?= MB_PASSWORD_MIN ?> characters. A few unrelated words works well.</span>
       <input name="password" type="password" required minlength="<?= MB_PASSWORD_MIN ?>" autocomplete="new-password"></label>

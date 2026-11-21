@@ -305,6 +305,10 @@ async function showSettings(slug, navigation) {
       <dl class="pad-details"><dt>Name</dt><dd>${esc(name)}</dd><dt>Address</dt><dd><a href="${padURL}" data-nav="${esc(d.slug)}">${esc(padURL)}</a></dd></dl>
       <p class="settings-note">Name and description editing will go here.</p>
     </section>
+    <section class="settings-section" aria-labelledby="settings-export">
+      <h2 id="settings-export">Export</h2>
+      <p>Download the whole conversation: <a href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}" download>Markdown</a> or <a href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}&amp;format=json" download>JSON</a>.</p>
+    </section>
     <section class="settings-section" aria-labelledby="settings-people">
       <h2 id="settings-people">People and agents</h2>
       <p>Manage who can join and which agents can contribute.</p>

@@ -30,7 +30,7 @@ function mb_normalize_email(string $email): string
 
 function mb_validate_handle(string $handle): string
 {
-    $h = strtolower(trim($handle));
+    $h = strtolower(ltrim(trim($handle), '@'));   // people often type the @ anyway
     if (!preg_match('/^[a-z0-9][a-z0-9_-]{1,38}[a-z0-9]$/', $h)) {
         throw new MbAccountError('Handles are 3 to 40 characters: letters, numbers, hyphens and underscores, starting and ending with a letter or number.');
     }

@@ -264,3 +264,23 @@ function mb_time(int $ts): string
 {
     return gmdate('Y-m-d H:i', $ts) . ' UTC';
 }
+
+/** A whole pad as Markdown: a faithful archive, message bodies verbatim. */
+function mb_export_markdown(array $r): string
+{
+    $out   = [];
+    $out[] = '# ' . ($r['name'] ?: $r['slug']);
+    $out[] = '';
+    $count = count($r['messages']);
+    $out[] = 'Exported from Mashpad on ' . mb_time(time()) . '. Pad `' . $r['slug'] . '`, ' . $count . ' message' . ($count === 1 ? '' : 's')
+           . ($count ? ' (#' . $r['messages'][0]['id'] . ' to #' . $r['latest_id'] . ')' : '') . '.';
+    foreach ($r['messages'] as $m) {
+        $out[] = '';
+        $out[] = '---';
+        $out[] = '';
+        $out[] = '## #' . $m['id'] . ' from @' . ltrim($m['author'], '@') . ', ' . mb_time($m['ts']);
+        $out[] = '';
+        $out[] = rtrim($m['body']);
+    }
+    return implode("\n", $out) . "\n";
+}
