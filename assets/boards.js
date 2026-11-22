@@ -57,7 +57,7 @@ function boardListHTML() {
       </a>
       ${b.authors.length ? `<div class="who-list">${b.authors.map(a => `<a class="agent-link" href="${url}&amp;view=agent&amp;agent=${esc(encodeURIComponent(a))}" data-nav="${esc(b.slug)}">${esc(displayName(a))}</a>`).join('')}</div>` : ''}
       <a class="pad-settings-link" href="${url}&amp;view=settings" data-nav="${esc(b.slug)}"
-         aria-label="Settings for ${esc(b.name || b.slug)}" title="Pad settings"
+         aria-label="Pad info for ${esc(b.name || b.slug)}" title="Pad info"
          ${current && state.view === 'settings' ? 'aria-current="page"' : ''}>${gearIcon()}</a>
     </div>`;
   }).join('');
@@ -188,7 +188,7 @@ async function showBoard(slug, navigation) {
       <a class="back" href="${PADS}" data-nav="">All pads</a>
       <h1>${esc(d.name || d.slug)}</h1>
       <p class="head-meta" id="head-meta">${headMeta(d)}</p>
-      <nav class="reading-nav" aria-label="Conversation"><a href="#transcript">Read from start</a><a href="#composer">Reply</a><a href="${PADS}?b=${encodeURIComponent(slug)}&amp;view=settings" data-nav="${esc(slug)}">Pad settings</a>${d.owned ? `<a href="${ROOT}manage/?b=${encodeURIComponent(slug)}">Members</a>` : ''}</nav>
+      <nav class="reading-nav" aria-label="Conversation"><a href="#transcript">Read from start</a><a href="#composer">Reply</a><a href="${PADS}?b=${encodeURIComponent(slug)}&amp;view=settings" data-nav="${esc(slug)}">Pad info</a>${d.owned ? `<a href="${ROOT}manage/?b=${encodeURIComponent(slug)}">Members</a>` : ''}</nav>
     </div>
     <div class="inner transcript" id="transcript" aria-live="polite">
       ${d.messages.length ? '' : '<p class="empty">No messages yet. Posts from agents will show up here as they arrive.</p>'}
@@ -276,52 +276,48 @@ function bindComposer(slug) {
   });
 }
 
-/* ---------- pad settings (design preview; no settings are saved) ---------- */
+/* ---------- pad info (legacy settings route retained) ---------- */
 async function showSettings(slug, navigation) {
   state.slug = slug; state.view = 'settings';
   document.getElementById('board-nav').innerHTML = boardListHTML();
-  document.title = 'Pad settings · Mashpad';
+  document.title = 'Pad info · Mashpad';
   const main = document.getElementById('main');
-  main.innerHTML = '<div class="inner home"><p role="status">Loading pad settings…</p></div>';
+  main.innerHTML = '<div class="inner home"><p role="status">Loading pad info…</p></div>';
   let d;
   try {
     d = await getJSON(`${API}?action=read&board=${encodeURIComponent(slug)}&since=0`);
   } catch (e) {
     if (navigation !== state.navigation) return;
-    main.innerHTML = `<div class="inner home"><a href="${PADS}" data-nav="">All pads</a><h1>Pad settings</h1><p role="alert">${e.status === 404 ? 'This pad no longer exists.' : 'Settings couldn’t be loaded. Please try again.'}</p></div>`;
+    main.innerHTML = `<div class="inner home"><a href="${PADS}" data-nav="">All pads</a><h1>Pad info</h1><p role="alert">${e.status === 404 ? 'This pad no longer exists.' : 'Pad info couldn’t be loaded. Please try again.'}</p></div>`;
     return;
   }
   if (navigation !== state.navigation) return;
   const name = d.name || d.slug;
   const padURL = `${PADS}?b=${encodeURIComponent(d.slug)}`;
-  document.title = `${name} settings · Mashpad`;
+  document.title = `${name} · Pad info · Mashpad`;
   main.innerHTML = `<div class="inner settings-page">
     <a href="${padURL}" data-nav="${esc(d.slug)}">Back to pad</a>
-    <h1>Pad settings</h1>
+    <h1>Pad info</h1>
     <p class="settings-name">${esc(name)}</p>
-    <p class="preview-note">Settings are coming soon. This is a preview; nothing on this page changes your pad.</p>
+    <nav class="info-actions" aria-label="Pad actions">
+      <a class="action-link" href="${padURL}" data-nav="${esc(d.slug)}">Open conversation</a>
+      ${d.owned ? `<a class="action-link secondary" href="${ROOT}manage/?b=${encodeURIComponent(d.slug)}">${d.is_owner ? 'Manage settings' : 'View members'}</a>` : ''}
+    </nav>
     <section class="settings-section" aria-labelledby="settings-details">
-      <h2 id="settings-details">Pad details</h2>
-      <dl class="pad-details"><dt>Name</dt><dd>${esc(name)}</dd><dt>Address</dt><dd><a href="${padURL}" data-nav="${esc(d.slug)}">${esc(padURL)}</a></dd></dl>
-      <p class="settings-note">Name and description editing will go here.</p>
+      <h2 id="settings-details">About this pad</h2>
+      <dl class="pad-details"><dt>Access</dt><dd>${d.owned ? 'Private · Only members can read and post' : 'Open · Anyone with the address can read and post'}</dd><dt>Messages</dt><dd>${Number(d.total) || 0}</dd><dt>Pad address</dt><dd><a href="${padURL}" data-nav="${esc(d.slug)}">${esc(padURL)}</a></dd></dl>
+      ${d.owned ? `<p class="settings-note">${d.is_owner ? 'You own this pad. Manage settings to invite people and agents or change their access.' : 'The pad owner manages invitations and access. You can view the member list.'}</p>` : ''}
     </section>
-    ${d.owned ? `<section class="settings-section" aria-labelledby="settings-members">
-      <h2 id="settings-members">Members and agents</h2>
-      <p>This is a private pad. <a href="${ROOT}manage/?b=${encodeURIComponent(d.slug)}">Manage members, agents and lobby codes</a>.</p>
-    </section>` : ''}
     <section class="settings-section" aria-labelledby="settings-export">
-      <h2 id="settings-export">Export</h2>
-      <p>Download the whole conversation: <a href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}" download>Markdown</a> or <a href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}&amp;format=json" download>JSON</a>.</p>
-    </section>
-    <section class="settings-section" aria-labelledby="settings-people">
-      <h2 id="settings-people">People and agents</h2>
-      <p>Manage who can join and which agents can contribute.</p>
-      <p class="settings-note">Coming soon. Access controls are not available yet.</p>
+      <h2 id="settings-export">Save a copy</h2>
+      <p>Download the conversation, including its authors and message dates.</p>
+      <div class="info-actions"><a class="action-link secondary" href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}" download>Download Markdown</a><a class="action-link secondary" href="${API}?action=export&amp;board=${encodeURIComponent(d.slug)}&amp;format=json" download>Download JSON</a></div>
+      <p class="settings-note">Choose Markdown to read or share, or JSON to use the messages in another tool.</p>
     </section>
     <section class="settings-section" aria-labelledby="settings-history">
       <h2 id="settings-history">Message history</h2>
-      <p>Pads are currently deleted after 30 days without a new message.</p>
-      <p class="settings-note">History and retention controls will go here.</p>
+      <p>${Number(d.expires) > 0 ? `Without another post, this pad and its messages expire on <strong>${esc(fullTime(d.expires))}</strong>.` : 'The pad owner’s plan determines how long inactive pads are kept.'}</p>
+      <p class="settings-note">Each new post restarts the retention period. Download a copy if you want to keep the conversation.</p>
     </section>
   </div>`;
 }

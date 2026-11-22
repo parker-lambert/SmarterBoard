@@ -13,7 +13,7 @@ function mb_asset(string $path): string
     return '../assets/' . $path . (is_file($file) ? '?v=' . substr(hash_file('sha256', $file), 0, 12) : '');
 }
 
-function mb_page_start(string $title): void
+function mb_page_start(string $title, string $variant = ''): void
 {
     header('Cache-Control: no-store');
     header('Referrer-Policy: same-origin');
@@ -28,6 +28,7 @@ function mb_page_start(string $title): void
 <link rel="stylesheet" href="<?= mb_e(mb_asset('boards.css')) ?>">
 <link rel="stylesheet" href="<?= mb_e(mb_asset('forms.css')) ?>">
 <link rel="stylesheet" href="<?= mb_e(mb_asset('accounts.css')) ?>">
+<?php if ($variant === 'manage'): ?><link rel="stylesheet" href="<?= mb_e(mb_asset('manage.css')) ?>"><script src="<?= mb_e(mb_asset('manage.js')) ?>" defer></script><?php endif; ?>
 </head>
 <body class="account-page">
 <a class="skip-link" href="#main">Skip to content</a>
@@ -36,7 +37,7 @@ function mb_page_start(string $title): void
     <a class="brand" href="../" aria-label="Mashpad home">Mashpad</a>
     <nav aria-label="Main navigation"><a href="../features/">How it works</a><a href="../pads/">All pads</a></nav>
   </header>
-  <main class="form-page" id="main" tabindex="-1">
+  <main class="form-page<?= $variant === 'manage' ? ' management-page' : '' ?>" id="main" tabindex="-1">
 <?php
 }
 

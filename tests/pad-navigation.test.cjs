@@ -45,7 +45,7 @@ test('pad row has independent, escaped conversation and settings links', async (
   assert.equal((html.match(/<a\s/g) || []).length, 2);
   assert.match(html, /<\/a>\s*<a class="pad-settings-link"/);
   assert.match(html, /href="https:\/\/example\.test\/mashpad\/pads\/\?b=launch-review&amp;view=settings"/);
-  assert.match(html, /aria-label="Settings for A &quot;name&quot; &lt;img src=x&gt;"/);
+  assert.match(html, /aria-label="Pad info for A &quot;name&quot; &lt;img src=x&gt;"/);
   assert.equal((html.match(/aria-current="page"/g) || []).length, 1);
   assert.doesNotMatch(html, /<img/);
 });
@@ -60,7 +60,7 @@ test('direct settings route reads the selected pad without posting or polling me
   assert.equal(requests.length, 1);
   assert.equal(requests[0].options, undefined);
   assert.match(requests[0].url, /action=read&board=launch-review/);
-  assert.match(element('main').innerHTML, /Settings are coming soon/);
+  assert.match(element('main').innerHTML, /<h1>Pad info<\/h1>/);
   assert.match(element('main').innerHTML, /Back to pad/);
   assert.doesNotMatch(element('main').innerHTML, /<form|<input|<button/);
   assert.equal(api.state.view, 'settings');
@@ -294,8 +294,8 @@ test('pad settings offer Markdown and JSON export of the whole pad', async () =>
   context.location.search = '?b=launch-review&view=settings';
   await api.route();
   const html = element('main').innerHTML;
-  assert.match(html, /href="https:\/\/example\.test\/mashpad\/api\.php\?action=export&amp;board=launch-review" download>Markdown/);
-  assert.match(html, /action=export&amp;board=launch-review&amp;format=json" download>JSON/);
+  assert.match(html, /href="https:\/\/example\.test\/mashpad\/api\.php\?action=export&amp;board=launch-review" download>Download Markdown/);
+  assert.match(html, /action=export&amp;board=launch-review&amp;format=json" download>Download JSON/);
 });
 
 test('private pads are marked, credit an agent creator, and link to member management', async () => {
@@ -310,7 +310,7 @@ test('private pads are marked, credit an agent creator, and link to member manag
   assert.match(element('main').innerHTML, /href="https:\/\/example\.test\/mashpad\/manage\/\?b=dev">Members</);
   context.location.search = '?b=dev&view=settings';
   await api.route();
-  assert.match(element('main').innerHTML, /Manage members, agents and lobby codes/);
+  assert.match(element('main').innerHTML, />Manage settings<\/a>/);
 });
 
 test('open pads show no private marker or members link', async () => {
@@ -328,4 +328,20 @@ test('signed-in sidebar offers New pad', async () => {
   context.fetch = async () => reply({ signed_in: true, handle: 'dylan', display_name: 'Dylan' });
   await api.loadMe();
   assert.match(api.accountHTML(), /href="https:\/\/example\.test\/mashpad\/create\/">New pad</);
+});
+
+
+test('pad info distinguishes member access and uses server expiry instead of a fixed plan', async () => {
+  const { api, context, element } = await app();
+  const expires = 1900000000;
+  context.fetch = async () => reply({ ...pad(), owned: true, is_owner: false, expires });
+  context.location.search = '?b=launch-review&view=settings';
+  await api.route();
+  const html = element('main').innerHTML;
+  assert.match(html, />View members<\/a>/);
+  assert.doesNotMatch(html, /Manage settings|coming soon|30 days|preview/i);
+  assert.ok(html.includes(new Date(expires * 1000).toLocaleString()));
+  context.fetch = async () => reply(pad());
+  await api.route();
+  assert.doesNotMatch(element('main').innerHTML, /manage\//);
 });
