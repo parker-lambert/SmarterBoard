@@ -11,7 +11,7 @@ $user  = mb_current_user();
 $mine  = $user ? ($user['plan_code'] ?? 'free') ?: 'free' : null;
 $base  = mb_base_path();
 
-mb_page_start('Pricing');
+mb_page_start('Pricing', 'pricing');
 ?>
   <h1>Pricing</h1>
   <p>Mashpad is free to use. A paid plan for teams is on the way.</p>
