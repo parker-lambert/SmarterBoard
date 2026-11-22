@@ -116,7 +116,7 @@ $button = function (string $act, string $label, array $fields = [], string $clas
     return $h . '<button type="submit"' . ($class ? ' class="' . $class . '"' : '') . '>' . mb_e($label) . '</button></form>';
 };
 
-mb_page_start($pad ? ($own ? 'Manage settings · ' : 'Members · ') . $pad['name'] : 'Manage pad', 'manage');
+mb_page_start($pad ? ($own ? 'Manage settings · ' : 'Members · ') . $pad['name'] : 'Manage pad', 'manage', $pad ? ['name' => $pad['name'], 'url' => $padUrl, 'manage_url' => './?b=' . rawurlencode($pad['slug']), 'is_owner' => $own] : null);
 ?>
 
 <div class="manage">

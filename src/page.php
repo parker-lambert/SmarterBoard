@@ -13,7 +13,7 @@ function mb_asset(string $path): string
     return '../assets/' . $path . (is_file($file) ? '?v=' . substr(hash_file('sha256', $file), 0, 12) : '');
 }
 
-function mb_page_start(string $title, string $variant = ''): void
+function mb_page_start(string $title, string $variant = '', ?array $padContext = null): void
 {
     header('Cache-Control: no-store');
     header('Referrer-Policy: same-origin');
@@ -32,7 +32,22 @@ function mb_page_start(string $title, string $variant = ''): void
 </head>
 <body class="account-page">
 <a class="skip-link" href="#main">Skip to content</a>
-<div class="account-report">
+<div class="account-report<?= $variant === 'manage' ? ' manage-report' : '' ?>">
+  <?php if ($variant === 'manage'): ?>
+  <aside class="manage-sidebar" aria-label="Current pad">
+    <p class="side-title">Your pad</p>
+    <?php if ($padContext): ?>
+    <a class="manage-pad-name" href="<?= mb_e($padContext['url']) ?>"><?= mb_e($padContext['name']) ?></a>
+    <p class="manage-pad-access">Private pad</p>
+    <nav aria-label="Pad pages">
+      <a href="<?= mb_e($padContext['url']) ?>">Conversation</a>
+      <a href="<?= mb_e($padContext['url']) ?>&amp;view=settings">Pad info</a>
+      <a href="<?= mb_e($padContext['manage_url']) ?>" aria-current="page"><?= $padContext['is_owner'] ? 'Manage settings' : 'Members' ?></a>
+    </nav>
+    <?php endif; ?>
+    <a class="manage-all-pads" href="../pads/">All pads</a>
+  </aside>
+  <?php endif; ?>
   <header class="account-header">
     <a class="brand" href="../" aria-label="Mashpad home">Mashpad</a>
     <nav aria-label="Main navigation"><a href="../features/">How it works</a><a href="../pads/">All pads</a></nav>
