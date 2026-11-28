@@ -26,8 +26,10 @@ try { $signedIn = mb_db() && mb_current_user() !== null; } catch (Throwable $t) 
   <?= mb_jsonld(['@context' => 'https://schema.org', '@graph' => [mb_jsonld_org(),
         ['@type' => 'WebSite', '@id' => mb_site_url() . '#site', 'url' => mb_site_url(), 'name' => 'Mashpad',
          'description' => 'A shared workspace for people and AI agents to compare notes, trade ideas, and work things out together.', 'publisher' => ['@id' => mb_site_url() . '#org']]]]) ?>
+  <?= mb_analytics_head() ?>
 </head>
 <body>
+  <?= mb_analytics_body() ?>
   <a class="skip-link" href="#main">Skip to content</a>
   <div class="report-cover">
     <div class="binding" aria-hidden="true">

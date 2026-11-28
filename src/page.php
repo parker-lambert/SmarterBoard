@@ -96,6 +96,7 @@ function mb_page_start(string $title, string $variant = '', ?array $padContext =
 <?php if ($variant === 'public' && !empty($padContext['description']) && isset($padContext['path'])): ?>
 <meta name="description" content="<?= mb_e($padContext['description']) ?>">
 <?= mb_seo_tags($title . ' | Mashpad', $padContext['description'], $padContext['path']) ?>
+<?= mb_analytics_head() ?>
 <?php endif; ?>
 <link rel="icon" href="<?= mb_e(mb_asset('smarterboard-mark.svg')) ?>" type="image/svg+xml">
 <link rel="stylesheet" href="<?= mb_e(mb_asset('boards.css')) ?>">
@@ -105,6 +106,7 @@ function mb_page_start(string $title, string $variant = '', ?array $padContext =
 <?php if ($variant === 'manage' || ($variant === 'admin' && ($padContext['section'] ?? '') === 'public')): ?><link rel="stylesheet" href="<?= mb_e(mb_asset('manage.css')) ?>"><script src="<?= mb_e(mb_asset('confirm.js')) ?>" defer></script><script src="<?= mb_e(mb_asset('manage.js')) ?>" defer></script><?php endif; ?>
 </head>
 <body class="account-page<?= $variant === 'public' ? ' public-page' : '' ?><?= ($padContext['current'] ?? '') === 'pricing' ? ' pricing-page' : '' ?>">
+<?php if ($variant === 'public' && !empty($padContext['description']) && isset($padContext['path'])) { echo mb_analytics_body(); } ?>
 <a class="skip-link" href="#main">Skip to content</a>
 <?php if ($variant === 'public'): ?>
 <div class="public-shell">
@@ -158,7 +160,7 @@ const MB_OPERATOR = [
     'email'   => 'hello@parker-lambert.com',
     'law'     => 'Louisiana',
 ];
-const MB_LEGAL_UPDATED = '22 November 2026';
+const MB_LEGAL_UPDATED = '28 November 2026';
 /** The address people write to about Mashpad itself (the Terms and Privacy keep the operator's own, above). */
 const MB_SUPPORT_EMAIL = 'hello@mashpad.ai';
 /** Other properties of the same people, listed as the organisation's sameAs. */
@@ -175,6 +177,42 @@ const MB_FEATURE_USE_CASES = [
     ['uc-time', 'Watch project time (Timey Wimey, Toggl Track, Clockify)'], ['uc-brand', 'Look after brand assets (InspireStudio, Bynder, Frontify, Cloudinary)'],
     ['uc-tools', 'Bring in work from other tools (Canva)'], ['uc-sign', 'Send agreements out for signature (DocuSign)'],
 ];
+
+/** The Google Tag Manager container that loads Google Analytics on the public pages. */
+const MB_GTM_ID = 'GTM-N8SK2JMJ';
+
+/**
+ * Whether to measure this visit. Only on the real site (not on a developer's machine or an address that is a bare IP), and never for
+ * a browser that sends Global Privacy Control or Do Not Track. Called only for the public pages that are indexed (home, how it works,
+ * pricing, terms, privacy): never the app, sign-in, registration, password reset or an invitation, which handle credentials.
+ */
+function mb_analytics_on(?array $server = null): bool
+{
+    $server ??= $_SERVER;
+    $host = strtolower(preg_replace('/:\d+$/', '', (string) ($server['HTTP_HOST'] ?? '')));
+    if ($host === '' || $host === 'localhost' || str_ends_with($host, '.local') || str_ends_with($host, '.localhost') || filter_var(trim($host, '[]'), FILTER_VALIDATE_IP) !== false) {
+        return false;
+    }
+    return ($server['HTTP_SEC_GPC'] ?? '') !== '1' && ($server['HTTP_DNT'] ?? '') !== '1';
+}
+
+/** Google Tag Manager's standard loader, for the end of a public page's <head>. Nothing when the visit isn't measured. */
+function mb_analytics_head(?array $server = null): string
+{
+    if (!mb_analytics_on($server)) {
+        return '';
+    }
+    return "<!-- Google Tag Manager -->\n<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','" . MB_GTM_ID . "');</script>\n<!-- End Google Tag Manager -->\n";
+}
+
+/** The no-script half of the tag, for straight after <body> opens. */
+function mb_analytics_body(?array $server = null): string
+{
+    if (!mb_analytics_on($server)) {
+        return '';
+    }
+    return '<!-- Google Tag Manager (noscript) --><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=' . MB_GTM_ID . '" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript><!-- End Google Tag Manager (noscript) -->' . "\n";
+}
 
 /** The canonical address and the Open Graph and Twitter card tags for a public page. $path is the page's path from the site's root. */
 function mb_seo_tags(string $title, string $description, string $path): string

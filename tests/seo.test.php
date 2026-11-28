@@ -73,5 +73,18 @@ check('agents.md tells an agent how to connect, join and behave', str_starts_wit
 check('none of them says anything is for sale that is not', !preg_match('/\bPlus\b|\$\d|buy|purchase/i', $robots . $llms . $agents));
 check('and every address in them is on mashpad.ai', !preg_match('~https?://(?!mashpad\.ai)~', $robots . $llms . str_replace('http://www.sitemaps.org/schemas/sitemap/0.9', '', $sitemap) . preg_replace('~hello@[a-z.-]+~', '', $agents)));
 
+// ---- Google Analytics, through Google Tag Manager
+check('the container is the one Dylan gave', MB_GTM_ID === 'GTM-N8SK2JMJ');
+$live = ['HTTP_HOST' => 'mashpad.ai'];
+check('on the real site, and www, a visit is measured', mb_analytics_on($live) && mb_analytics_on(['HTTP_HOST' => 'www.mashpad.ai']) && mb_analytics_on(['HTTP_HOST' => 'MASHPAD.AI:443']));
+check('on a developer\'s machine or a bare address it is not', !mb_analytics_on(['HTTP_HOST' => 'localhost']) && !mb_analytics_on(['HTTP_HOST' => 'localhost:8081']) && !mb_analytics_on(['HTTP_HOST' => '127.0.0.1']) && !mb_analytics_on(['HTTP_HOST' => '127.0.0.1:8081']) && !mb_analytics_on(['HTTP_HOST' => '[::1]:8080']) && !mb_analytics_on(['HTTP_HOST' => '192.168.1.5']) && !mb_analytics_on(['HTTP_HOST' => 'dev.local']) && !mb_analytics_on(['HTTP_HOST' => 'x.localhost']) && !mb_analytics_on([]));
+check('a browser that sends Global Privacy Control or Do Not Track is not measured, and one that sends them off is', !mb_analytics_on($live + ['HTTP_SEC_GPC' => '1']) && !mb_analytics_on($live + ['HTTP_DNT' => '1']) && mb_analytics_on($live + ['HTTP_SEC_GPC' => '0', 'HTTP_DNT' => '0']));
+$h = mb_analytics_head($live); $b = mb_analytics_body($live);
+check('the head part is Google\'s standard loader for this container, async, and nothing else', str_contains($h, "gtm.start") && str_contains($h, "event:'gtm.js'") && str_contains($h, 'https://www.googletagmanager.com/gtm.js?id=') && str_contains($h, 'j.async=true') && str_contains($h, "'GTM-N8SK2JMJ'") && substr_count($h, 'GTM-N8SK2JMJ') === 1 && substr_count($h, '<script') === 1 && !str_contains($h, 'gtag('));
+check('the body part is the no-script frame for the same container, hidden', str_contains($b, '<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N8SK2JMJ"') && str_contains($b, 'height="0" width="0" style="display:none;visibility:hidden"') && substr_count($b, 'GTM-N8SK2JMJ') === 1);
+check('when a visit is not measured both parts are empty', mb_analytics_head(['HTTP_HOST' => 'localhost']) === '' && mb_analytics_body(['HTTP_HOST' => 'localhost']) === '' && mb_analytics_head($live + ['HTTP_SEC_GPC' => '1']) === '' && mb_analytics_body($live + ['HTTP_DNT' => '1']) === '');
+$priv = file_get_contents("$root/privacy/index.php");
+check('the privacy page says what is measured, where, by whom, what is not, and how to opt out, and its date is current', str_contains($priv, 'Measuring visits to the public pages') && str_contains($priv, 'Google Tag Manager to run Google Analytics') && str_contains($priv, 'Google sets cookies') && str_contains($priv, "sign in, register or reset a password, and invitations don't load it") && str_contains($priv, 'Nothing from inside a pad is sent to it') && str_contains($priv, 'Global Privacy Control or Do Not Track') && MB_LEGAL_UPDATED === '28 November 2026');
+
 echo "\n$pass passed, $fail failed\n";
 exit($fail ? 1 : 0);

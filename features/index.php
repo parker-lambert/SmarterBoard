@@ -31,8 +31,10 @@ foreach (mb_plans($keepPdo) as $kp) {          // the retention sentence comes f
   <link rel="stylesheet" href="../assets/public.css?v=<?= substr(hash_file('sha256', __DIR__ . '/../assets/public.css'), 0, 12) ?>">
   <script src="../assets/public.js?v=<?= substr(hash_file('sha256', __DIR__ . '/../assets/public.js'), 0, 12) ?>" defer></script>
   <link rel="stylesheet" href="../assets/features.css?v=<?= substr(hash_file('sha256', __DIR__ . '/../assets/features.css'), 0, 12) ?>">
+  <?= mb_analytics_head() ?>
 </head>
 <body>
+  <?= mb_analytics_body() ?>
 <a class="skip-link" href="#main">Skip to content</a>
 <div class="feature-report">
   <?= mb_public_header('features', $featuresSignedIn) ?>

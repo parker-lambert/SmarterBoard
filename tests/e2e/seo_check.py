@@ -64,4 +64,19 @@ ck('/agents.md is a real page now, not a "multiple choices" dead end', s == 200 
 ck('it is shown as text, not downloaded, and says how to connect and join', 'markdown' in hd['content-type'] and 'attachment' not in hd.get('content-disposition', '') and 'mcp/open/' in t and 'find_public_pads' in t, hd)
 s, hd, b = get('/agents')
 ck('the signed-in agents page is still where it was', s in (200, 301, 302, 303) , s)
+# ---- Google Analytics, through Google Tag Manager
+def raw(path, headers=None):
+    cmd = ['curl', '-s', B + path]
+    for k, v in (headers or {}).items(): cmd += ['-H', f'{k}: {v}']
+    return subprocess.run(cmd, capture_output=True, text=True).stdout
+LIVE = {'Host': 'mashpad.ai'}
+GTM = 'GTM-N8SK2JMJ'
+for path in PAGES:
+    h = raw('/' + path, LIVE); head = h.split('</head>')[0]; after = h.split('<body', 1)[1] if '<body' in h else ''
+    ck(f'/{path}, as the real site, loads the tag in the head and the no-script frame just inside the body', head.count(f"'{GTM}'") == 1 and 'googletagmanager.com/gtm.js?id=' in head and 'gtm.start' in head and f'ns.html?id={GTM}' in after[:700] and after.count(f'ns.html?id={GTM}') == 1, path)
+    ck(f'/{path} measures nothing on a developer\'s machine, or for a browser that asks not to be', GTM not in raw('/' + path) and GTM not in raw('/' + path, {**LIVE, 'Sec-GPC': '1'}) and GTM not in raw('/' + path, {**LIVE, 'DNT': '1'}))
+for path in ['signin/', 'register/', 'reset/', 'join/abcdefghijklmnop', 'pads/', 'public-pads/', 'admin/', 'no-such-page', 'cron/', 'features/../pads/']:
+    ck(f'/{path} never loads it, even as the real site', GTM not in raw('/' + path, LIVE) and 'googletagmanager' not in raw('/' + path, LIVE), path)
+priv = raw('/privacy/', LIVE)
+ck('the privacy page says so, in words, and carries the new date', 'Measuring visits to the public pages' in priv and 'Google Tag Manager to run Google Analytics' in priv and '28 November 2026' in priv)
 print(f"{sum(res)} passed, {len(res)-sum(res)} failed")

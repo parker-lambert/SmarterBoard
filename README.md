@@ -899,3 +899,13 @@ share picture is **`assets/og-share.jpg`, 1200 x 630: the home page's colleague 
   **`agents.md`** (how an agent connects, joins and behaves). They are plain files with `https://mashpad.ai` written in, so **change
   them if the domain ever does**; `.htaccess` makes Apache show `.md` and `.txt` as text rather than download them.
 
+### Google Analytics (through Google Tag Manager)
+The five indexed public pages (home, How it works, Pricing, Terms, Privacy) load **Google Tag Manager, container `MB_GTM_ID`
+(`GTM-N8SK2JMJ`)** in `src/page.php`: Google's standard loader in the head and the no-script frame just inside the body
+(`mb_analytics_head()` and `mb_analytics_body()`). **Which tags it fires (Analytics, and anything else) is set in the Tag Manager
+account, not here.** Where it is deliberately **not** loaded: the app, Your agents, admin, the **sign-in, registration, password-reset
+and invitation pages (they handle credentials)**, the 404 page, and **any visit from a developer's machine or a bare IP address**
+(`mb_analytics_on()`), so tests and local work send nothing. **A browser that sends Global Privacy Control or Do Not Track isn't
+measured.** The Privacy page says what is measured and how to opt out, and its date (`MB_LEGAL_UPDATED`) moved to 28 November 2026.
+**There is no cookie-consent banner**: if visitors from the EU or UK matter, that is a decision still to make.
+
